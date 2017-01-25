@@ -7,13 +7,16 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "virtualbox" do |vb|
       vb.memory = 1024
+      vb.linked_clone = true
   end
   config.vm.define :master do |master_config|
-    master_config.vm.box = "ubuntu/trusty64"
+    master_config.vm.box = "bento/ubuntu-16.04"
     master_config.vm.host_name = 'saltmaster.local'
     master_config.vm.network "private_network", ip: "192.168.50.10"
-    master_config.vm.synced_folder "saltstack/salt/", "/srv/salt"
-    master_config.vm.synced_folder "saltstack/pillar/", "/srv/pillar"
+    master_config.vm.synced_folder "saltstack/salt/", "/srv/salt/states"
+    master_config.vm.synced_folder "saltstack/pillar/", "/srv/salt/pillar"
+    master_config.vm.synced_folder "saltstack/reactor/", "/srv/salt/reactor"
+    master_config.vm.synced_folder "saltstack/master.d/", "/etc/salt/master.d"
 
     master_config.vm.provision :salt do |salt|
       salt.master_config = "saltstack/etc/master"
@@ -29,14 +32,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       salt.install_type = "stable"
       salt.install_master = true
       salt.no_minion = true
-      salt.verbose = true
+      salt.verbose = false
       salt.colorize = true
-      salt.bootstrap_options = "-P -c /tmp"
+      salt.bootstrap_options = "-U -P -c /tmp"
     end
   end
 
   config.vm.define :minion1 do |minion_config|
-    minion_config.vm.box = "ubuntu/trusty64"
+    minion_config.vm.box = "bento/ubuntu-16.04"
     minion_config.vm.host_name = 'saltminion1.local'
     minion_config.vm.network "private_network", ip: "192.168.50.11"
 
@@ -45,14 +48,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       salt.minion_key = "saltstack/keys/minion1.pem"
       salt.minion_pub = "saltstack/keys/minion1.pub"
       salt.install_type = "stable"
-      salt.verbose = true
+      salt.verbose = false
       salt.colorize = true
-      salt.bootstrap_options = "-P -c /tmp"
+      salt.bootstrap_options = "-U -P -c /tmp"
     end
   end
 
   config.vm.define :minion2 do |minion_config|
-    minion_config.vm.box = "ubuntu/trusty64"
+    minion_config.vm.box = "bento/ubuntu-16.04"
     # The following line can be uncommented to use Centos
     # instead of Ubuntu.
     # Comment out the above line as well
@@ -65,9 +68,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       salt.minion_key = "saltstack/keys/minion2.pem"
       salt.minion_pub = "saltstack/keys/minion2.pub"
       salt.install_type = "stable"
-      salt.verbose = true
+      salt.verbose = false
       salt.colorize = true
-      salt.bootstrap_options = "-P -c /tmp"
+      salt.bootstrap_options = "-U -P -c /tmp"
     end
   end
 
